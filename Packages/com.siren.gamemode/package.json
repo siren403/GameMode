@@ -1,0 +1,17 @@
+{
+  "name": "com.siren.gamemode",
+  "displayName": "GameMode",
+  "version": "0.0.1",
+  "unity": "2021.3",
+  "description": "GameMode(Level) Based Unity Library",
+  "documentationUrl": "",
+  "dependencies": {
+    "com.cysharp.unitask": "2.3.1"
+  },
+  "author": {
+    "name": "qkrsogusl3",
+    "email": "qkrsogusl3@gmail.com",
+    "url": ""
+  }
+}
+  
