@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb7dd1ba19dd4b02b4107b1cdb8269bc, type: 3}
+  m_Name: BackgroundTextElement
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 8918459735145187114, guid: 3cc4b7b54ce19474eb03cd7d82c094ef, type: 3}

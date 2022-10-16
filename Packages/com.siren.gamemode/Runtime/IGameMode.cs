@@ -12,7 +12,7 @@ namespace GameMode
 
     public interface IGameMode
     {
-        GameModeState State { get; }
+        GameModeState State { get; internal set; }
         
         UniTask OnStartAsync();
         UniTask OnEndAsync();

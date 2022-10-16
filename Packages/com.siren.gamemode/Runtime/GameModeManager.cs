@@ -5,44 +5,70 @@ using UnityEngine.SceneManagement;
 
 namespace GameMode
 {
+    public interface IGameModeProvider
+    {
+        IGameMode Global { get; }
+        T Resolve<T>() where T : IGameMode;
+    }
+
+
     public static class GameModeManager
     {
+        private static readonly LinkedTask SwitchTasks = new LinkedTask();
         private static IGameMode _currentMode;
-
         private static bool _isSwitching = false;
+        private static IGameModeProvider _provider;
 
-        public static void SwitchMode(IGameMode mode)
+        public static void SetProvider(IGameModeProvider provider) => _provider = provider;
+
+        public static void SwitchMode<T>() where T : class, IGameMode
         {
-            SwitchModeAsync(mode).Forget();
+            IGameMode modeInstance = _provider.Resolve<T>();
+            SwitchMode(modeInstance);
         }
 
-        public static async UniTask SwitchModeAsync(IGameMode mode)
+        public static void SwitchMode(IGameMode gameMode)
+        {
+            var isAny = SwitchTasks.Any();
+            SwitchTasks.Append(UniTask.Lazy(() => InternalSwitchMode(gameMode)));
+            if (!isAny)
+            {
+                SwitchTasks.GetAwaiter();
+            }
+        }
+
+        private static async UniTask InternalSwitchMode(IGameMode mode)
         {
             await UniTask.NextFrame();
-            
+
             if (mode.State != GameModeState.Ended) return;
 
             await UniTask.WaitUntil(() => !_isSwitching).Timeout(TimeSpan.FromSeconds(10));
             _isSwitching = true;
 
-            var masterScene = SceneManager.GetSceneByBuildIndex(0);
-            if (masterScene.isSubScene)
+            
+            var global = _provider?.Global;
+            if (global != null)
             {
-                SceneManager.SetActiveScene(masterScene);
+                await global.OnStartAsync();
             }
 
             // TODO: fade in 
             if (_currentMode != null)
             {
                 // TODO: fade in 
+                _currentMode.State = GameModeState.Ending;
                 await _currentMode.OnEndAsync();
+                _currentMode.State = GameModeState.Ended;
             }
 
             _currentMode = mode;
             try
             {
                 // TODO: fade out
+                _currentMode.State = GameModeState.Starting;
                 await _currentMode.OnStartAsync();
+                _currentMode.State = GameModeState.Started;
             }
             catch (Exception e)
             {
@@ -55,8 +81,69 @@ namespace GameMode
                 throw new Exception($"require started game mode: {_currentMode.GetType().Name}");
             }
 
+            if (global != null)
+            {
+                await global.OnEndAsync();
+            }
+
             // TODO: fade out
             _isSwitching = false;
         }
     }
+
+    // public static class GameModeManager
+    // {
+    //     private static IGameMode _currentMode;
+    //
+    //     private static bool _isSwitching = false;
+    //
+    //     public static void SwitchMode(IGameMode mode)
+    //     {
+    //         SwitchModeAsync(mode).Forget();
+    //     }
+    //
+    //     public static async UniTask SwitchModeAsync(IGameMode mode)
+    //     {
+    //         await UniTask.NextFrame();
+    //
+    //         if (mode.State != GameModeState.Ended) return;
+    //
+    //         await UniTask.WaitUntil(() => !_isSwitching).Timeout(TimeSpan.FromSeconds(10));
+    //         _isSwitching = true;
+    //
+    //         var masterScene = SceneManager.GetSceneByBuildIndex(0);
+    //         if (masterScene.isSubScene)
+    //         {
+    //             SceneManager.SetActiveScene(masterScene);
+    //         }
+    //
+    //         // TODO: fade in 
+    //         if (_currentMode != null)
+    //         {
+    //             // TODO: fade in 
+    //             _currentMode.State = GameModeState.Ending;
+    //             await _currentMode.OnEndAsync();
+    //         }
+    //
+    //         _currentMode = mode;
+    //         try
+    //         {
+    //             // TODO: fade out
+    //             await _currentMode.OnStartAsync();
+    //         }
+    //         catch (Exception e)
+    //         {
+    //             Debug.Log(e);
+    //             throw;
+    //         }
+    //
+    //         if (_currentMode.State != GameModeState.Started)
+    //         {
+    //             throw new Exception($"require started game mode: {_currentMode.GetType().Name}");
+    //         }
+    //
+    //         // TODO: fade out
+    //         _isSwitching = false;
+    //     }
+    // }
 }

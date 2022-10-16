@@ -44,7 +44,13 @@ namespace GameMode
 
     public abstract class GameModeBase : IGameMode
     {
-        public GameModeState State { get; private set; } = GameModeState.Ended;
+        internal GameModeState State { get; set; } = GameModeState.Ended;
+
+        GameModeState IGameMode.State
+        {
+            get => this.State;
+            set => this.State = value;
+        }
 
         public virtual UniTask OnStartAsync()
         {

@@ -15,8 +15,8 @@ namespace GameMode.GettingStarted
             var context = firstScene.Context;
             context.InstantiateCube();
 
-            GameModeSwitcher.SwitchMode(new SecondGameMode());
-            
+            GameModeManager.SwitchMode(new SecondGameMode());
+
             await UniTask.Delay(TimeSpan.FromSeconds(3));
         }
 
