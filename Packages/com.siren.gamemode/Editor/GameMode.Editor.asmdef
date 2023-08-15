@@ -1,8 +1,9 @@
 {
     "name": "GameMode.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "GameMode.Editor",
     "references": [
-        "GUID:8cf6c352e89ca0448b8701d982b43e2b"
+        "GUID:8cf6c352e89ca0448b8701d982b43e2b",
+        "GUID:478a2357cc57436488a56e564b08d223"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,9 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using VContainer;
 
-namespace Sandbox.UI.Elements
+namespace GameMode.UI
 {
     public abstract partial class PrefabElement<TElement> : ScriptableElement where TElement : IElement
     {

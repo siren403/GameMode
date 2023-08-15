@@ -1,12 +1,11 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
 using GameMode;
+using GameMode.UI;
 using Sandbox.UI.Elements;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
-using Object = UnityEngine.Object;
-using Text = Sandbox.UI.Elements.Text;
 
 namespace Sandbox
 {

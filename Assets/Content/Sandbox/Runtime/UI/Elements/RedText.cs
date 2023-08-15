@@ -1,6 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
+using GameMode.UI;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using VContainer;
 
 namespace Sandbox.UI.Elements

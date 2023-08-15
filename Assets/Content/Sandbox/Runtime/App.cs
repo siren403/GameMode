@@ -1,13 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using GameMode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using VContainer;
-using Object = UnityEngine.Object;
 
 namespace Sandbox
 {
@@ -17,13 +13,14 @@ namespace Sandbox
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static async UniTaskVoid Bootstrap()
         {
+            return;
             var settings = AppSettings.Instance;
             var startScene = SceneManager.GetActiveScene();
 
-            if (startScene.buildIndex != settings.MasterSceneIndex)
+            if (startScene.buildIndex != AppSettings.MasterSceneIndex)
             {
 #if UNITY_EDITOR
-                await SceneManager.LoadSceneAsync(settings.MasterSceneIndex, LoadSceneMode.Additive);
+                await SceneManager.LoadSceneAsync(AppSettings.MasterSceneIndex, LoadSceneMode.Additive);
 #else
                 //TODO: 빌드 시 MasterScene을 0번으로
                 await SceneManager.LoadSceneAsync(settings.MasterSceneIndex);
@@ -31,6 +28,7 @@ namespace Sandbox
             }
 
             var builder = new ContainerBuilder();
+
             #region GameMode with VContainer
 
             foreach (var gameMode in settings.GameModes.Concat(
@@ -43,26 +41,6 @@ namespace Sandbox
             {
                 builder.RegisterInstance(gameMode).AsSelf();
                 builder.RegisterBuildCallback(_ => { _.Inject(_.Resolve(gameMode.GetType())); });
-            }
-
-            #endregion
-
-            #region Widget Provider
-
-            foreach (var provider in settings.Widgets)
-            {
-                builder.Register<WidgetProviderRegister<ITitleWidget>>(Lifetime.Singleton)
-                    .AsSelf()
-                    .WithParameter(provider);
-            }
-
-            #endregion
-
-            #region Elements
-
-            foreach (var element in settings.Elements)
-            {
-                element.CreateRegister()?.Configuration(builder);
             }
 
             #endregion

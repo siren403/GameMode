@@ -1,27 +1,29 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace Sandbox
+namespace GameMode.UI
 {
     [CreateAssetMenu(menuName = "View/" + nameof(WidgetProvider), fileName = "WidgetProvider", order = 0)]
     public class WidgetProvider : ScriptableObject
     {
-        [SerializeField] private GameObject prefab;
+        [SerializeField] protected GameObject prefab;
 
         public GameObject Prefab => prefab;
+    }
 
+    public abstract class WidgetProvider<T> : WidgetProvider where T : IWidget
+    {
         private void OnValidate()
         {
-            if (prefab != null && !prefab.TryGetComponent(out ITitleWidget widget))
+            if (prefab != null && !prefab.TryGetComponent(out T widget))
             {
                 prefab = null;
                 throw new Exception("not found widget");
             }
         }
     }
-
+    
     public class WidgetProviderRegister<T> where T : IWidget
     {
         private readonly WidgetProvider _provider;
@@ -42,8 +44,5 @@ namespace Sandbox
     {
     }
 
-    public interface ITitleWidget : IWidget
-    {
-        Button StartButton { get; }
-    }
+   
 }

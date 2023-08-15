@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace GameMode
         public abstract UniTask OnStartAsync();
 
         public abstract UniTask OnEndAsync();
+
     }
 
     public class ScriptableGameMode<T> : ScriptableGameMode where T : class, IGameMode, new()

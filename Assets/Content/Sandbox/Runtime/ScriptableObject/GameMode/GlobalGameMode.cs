@@ -10,7 +10,7 @@ namespace Sandbox
     {
         public override UniTask OnStartAsync()
         {
-            var masterSceneIndex = AppSettings.Instance.MasterSceneIndex;
+            var masterSceneIndex = AppSettings.MasterSceneIndex;
 
             var activeScene = SceneManager.GetActiveScene();
 

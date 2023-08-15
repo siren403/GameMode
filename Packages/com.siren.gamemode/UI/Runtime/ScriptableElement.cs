@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using VContainer;
 
-namespace Sandbox.UI.Elements
+namespace GameMode.UI
 {
     public abstract class ScriptableElement : ScriptableObject
     {
@@ -13,7 +12,7 @@ namespace Sandbox.UI.Elements
 
     public interface IElementRegister
     {
-        void Configuration(IContainerBuilder builder);
+        // void Configuration(IContainerBuilder builder);
     }
 
     public interface IElement

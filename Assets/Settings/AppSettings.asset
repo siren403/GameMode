@@ -12,15 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd64682b28bb40948462f080a5b290b9, type: 3}
   m_Name: AppSettings
   m_EditorClassIdentifier: 
-  masterSceneIndex: 0
-  globalGameMode: {fileID: 11400000, guid: 495949335158cd044ba9ea3e15b4829a, type: 2}
-  masterGameMode: {fileID: 11400000, guid: 5be884282246c5347af6995547d471c5, type: 2}
+  skipInitialize: 0
+  masterScene: {fileID: 102900000, guid: dbf9837eeac131a418ade9e04f90e040, type: 3}
+  globalGameMode: {fileID: 0}
+  masterGameMode: {fileID: 0}
   gameModes:
   - {fileID: 11400000, guid: 751bb359f02c7a141b032f82679a76e5, type: 2}
   - {fileID: 11400000, guid: 4b2e2f86becd50647ba22d29171349a7, type: 2}
-  widgets:
-  - {fileID: 11400000, guid: ea23b404ee834cd43a82fb2aba14ea93, type: 2}
-  elements:
-  - {fileID: 11400000, guid: 0fad74f01e9243c4195bf6d7825ad090, type: 2}
-  - {fileID: 11400000, guid: 64bbd3e8c0519d545975da5e47f5a457, type: 2}
-  - {fileID: 11400000, guid: 7df384ce05796bf4995aaeafa2bca56f, type: 2}

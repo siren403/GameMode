@@ -1,7 +1,7 @@
 ﻿using System;
+using GameMode.UI;
 using UnityEngine;
 using VContainer;
-using Object = UnityEngine.Object;
 
 namespace Sandbox.UI.Elements
 {
@@ -21,10 +21,7 @@ namespace Sandbox.UI.Elements
 
             public void Configuration(IContainerBuilder builder)
             {
-                builder.Register(_ =>
-                {
-                    return Instantiate(_text.Prefab).GetComponent<IText>();
-                }, Lifetime.Transient);
+                builder.Register(_ => Instantiate(_text.Prefab).GetComponent<IText>(), Lifetime.Transient);
             }
         }
     }

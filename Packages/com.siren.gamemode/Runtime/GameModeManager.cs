@@ -19,6 +19,8 @@ namespace GameMode
         private static bool _isSwitching = false;
         private static IGameModeProvider _provider;
 
+        public static IGameMode CurrentMode => _currentMode;
+
         public static void SetProvider(IGameModeProvider provider) => _provider = provider;
 
         public static void SwitchMode<T>() where T : class, IGameMode
@@ -46,7 +48,7 @@ namespace GameMode
             await UniTask.WaitUntil(() => !_isSwitching).Timeout(TimeSpan.FromSeconds(10));
             _isSwitching = true;
 
-            
+
             var global = _provider?.Global;
             if (global != null)
             {

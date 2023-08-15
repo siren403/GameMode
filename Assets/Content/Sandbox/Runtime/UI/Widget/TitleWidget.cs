@@ -1,3 +1,4 @@
+using GameMode.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,5 +8,10 @@ namespace Sandbox
     {
         [SerializeField] private Button startButton;
         public Button StartButton => startButton;
+    }
+
+    public interface ITitleWidget : IWidget
+    {
+        Button StartButton { get; }
     }
 }

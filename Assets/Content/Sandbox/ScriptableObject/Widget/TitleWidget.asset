@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 781eacb8ee584f30be1ab13ef3ed1471, type: 3}
-  m_Name: WidgetProvider
+  m_Script: {fileID: 11500000, guid: 01c1301535eb411ab61370d9adc7d3f8, type: 3}
+  m_Name: TitleWidget
   m_EditorClassIdentifier: 
   prefab: {fileID: 7757396518035501332, guid: 1d7a1d342f977424bb5590ab36d3e067, type: 3}
