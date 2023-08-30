@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define DOMAIN_RELOAD_HANDLING
+
+using System;
 using System.Collections;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -15,31 +17,32 @@ using VContainer.Unity;
 
 namespace GameMode
 {
-    public class FromMaster
-    {
-        public string Name => nameof(FromMaster);
-    }
-
     public static partial class App
     {
-#if UNITASK
+        private static IGameMode _startMode;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Initialize()
+        {
+            _startMode = null;
+            Debug.Log("app static init");
+        }
+
         // AfterAssembliesLoaded is called before BeforeSceneLoad
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         public static void InitUniTaskLoop()
         {
             var loop = PlayerLoop.GetCurrentPlayerLoop();
-            Cysharp.Threading.Tasks.PlayerLoopHelper.Initialize(ref loop);
+            PlayerLoopHelper.Initialize(ref loop);
             Debug.Log(nameof(InitUniTaskLoop));
         }
-#endif
+
+
         // ReSharper disable once Unity.IncorrectMethodSignature
+        // BeforeSceneLoad에서는 UniTask의 awaiter가 처리 되지않아 Delay, WaitUntil등 오퍼레이터가 동작하지 않음.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Bootstrap()
         {
-            // EditorSceneManager.playModeStartScene = null;
-            // await UniTask.NextFrame();
-            // Debug.Log("success");
-            // return;
             var settings = AppSettings.Instance;
             if (settings.SkipInitialize)
             {
@@ -65,27 +68,32 @@ namespace GameMode
             }
 #endif
 
-            IGameMode startMode = null;
 #if UNITY_EDITOR
             if (!string.IsNullOrWhiteSpace(StartingGameMode))
             {
-                startMode = settings.GameModes.FirstOrDefault(_ => _.name == StartingGameMode);
+                _startMode = settings.GameModes.FirstOrDefault(_ => _.name == StartingGameMode);
                 StartingGameMode = null;
             }
 #endif
-            if (startMode == null && startingMaster)
+            if (_startMode == null && startingMaster)
             {
-                startMode = settings.GameModes.FirstOrDefault();
+                _startMode = settings.GameModes.FirstOrDefault();
             }
-
-            if (startMode != null)
-                GameModeManager.SwitchMode(startMode);
 
             Debug.Log($"App Initialized: {SceneManager.GetActiveScene().name}");
         }
 
-#if UNITY_EDITOR
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        public static void SceneLoaded()
+        {
+            if (_startMode != null)
+                GameModeManager.SwitchMode(_startMode);
+
+            Debug.Log("switch start mode");
+        }
+
+#if UNITY_EDITOR
 
         public static string StartingGameMode
         {
@@ -113,12 +121,17 @@ namespace GameMode
             RestoreScene = containsGameMode ? null : SceneManager.GetActiveScene().name;
             StartingGameMode = name;
 
+#if DOMAIN_RELOAD_HANDLING
+            // Warn: 도메인 리로드 비활성화 상태에서 EnterPlaymode로 진입 시 
+            // BeforeSceneLoad 시점에서 UniTask 오퍼레이터가 동작하지 않음.
+            // 임의로 도메인리로드를 플레이모드 진입 전에 활성화하던가 AfterSceneLoad에서부터
+            // 오퍼레이터를 사용하면 된다.
             if (EditorSettings.enterPlayModeOptionsEnabled)
             {
                 EditorSettings.enterPlayModeOptionsEnabled = false;
                 EditorPrefs.SetBool(nameof(EditorSettings.enterPlayModeOptions), true);
             }
-
+#endif
             EditorSceneManager.playModeStartScene = settings.MasterScene;
             EditorApplication.EnterPlaymode();
         }
@@ -126,13 +139,13 @@ namespace GameMode
         [RuntimeInitializeOnLoadMethod]
         static void ResetPlayModeStartScene()
         {
+#if DOMAIN_RELOAD_HANDLING
             if (EditorPrefs.GetBool(nameof(EditorSettings.enterPlayModeOptions)))
             {
                 EditorSettings.enterPlayModeOptionsEnabled = true;
                 EditorPrefs.DeleteKey(nameof(EditorSettings.enterPlayModeOptions));
             }
-
-
+#endif
             EditorSceneManager.playModeStartScene = null;
         }
 

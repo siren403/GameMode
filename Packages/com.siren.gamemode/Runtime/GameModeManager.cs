@@ -1,5 +1,6 @@
 ﻿using System;
 using Cysharp.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,10 +15,19 @@ namespace GameMode
 
     public static class GameModeManager
     {
-        private static readonly LinkedTask SwitchTasks = new LinkedTask();
+        private static readonly LinkedTask SwitchTasks = new();
         private static IGameMode _currentMode;
-        private static bool _isSwitching = false;
+        private static bool _isSwitching;
         private static IGameModeProvider _provider;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Initialize()
+        {
+            SwitchTasks.Clear();
+            _currentMode = null;
+            _isSwitching = false;
+            _provider = null;
+        }
 
         public static IGameMode CurrentMode => _currentMode;
 
@@ -47,7 +57,6 @@ namespace GameMode
 
             await UniTask.WaitUntil(() => !_isSwitching).Timeout(TimeSpan.FromSeconds(10));
             _isSwitching = true;
-
 
             var global = _provider?.Global;
             if (global != null)

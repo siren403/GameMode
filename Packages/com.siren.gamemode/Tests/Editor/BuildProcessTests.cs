@@ -1,10 +1,13 @@
 using System;
+using System.Collections;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using GameMode;
 using GameMode.Editor.BuildProcess;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 public class BuildProcessTests
 {
@@ -27,7 +30,7 @@ public class BuildProcessTests
         AddMasterSceneProcess.Execute(AppSettings.Instance);
 
         var path = AssetDatabase.GetAssetPath(AppSettings.Instance.MasterScene);
-        Assert.Contains(path, EditorBuildSettings.scenes.Select(_ => _.path).ToList());
+        Assert.Contains(path, EditorBuildSettings.scenes.Select(s => s.path).ToList());
         Restore();
     }
 }

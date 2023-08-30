@@ -8,16 +8,9 @@ namespace GameMode
 {
     public class LinkedTask
     {
-        private readonly LinkedList<AsyncLazy> _linkedList;
-
-        private LinkedListNode<AsyncLazy> _addedNode;
+        private readonly LinkedList<AsyncLazy> _linkedList = new();
 
         private LinkedListNode<AsyncLazy> _currentNode;
-
-        public LinkedTask()
-        {
-            _linkedList = new LinkedList<AsyncLazy>();
-        }
 
         public bool Any() => _linkedList.Any() && _currentNode != null;
 
@@ -48,28 +41,31 @@ namespace GameMode
 #endif
             }
 
-            if (_currentNode == null)
-            {
-                _currentNode = _linkedList.First;
-                return UniTask.Create(async () =>
-                {
-                    while (_currentNode != null)
-                    {
-                        await _currentNode.Value;
-                        if (_currentNode.Next == null)
-                        {
-                            break;
-                        }
+            if (_currentNode != null) return _currentNode.Value.GetAwaiter();
 
-                        _currentNode = _currentNode.Next;
+            _currentNode = _linkedList.First;
+            return UniTask.Create(async () =>
+            {
+                while (_currentNode != null)
+                {
+                    await _currentNode.Value;
+                    if (_currentNode.Next == null)
+                    {
+                        break;
                     }
 
-                    _currentNode = null;
-                    _linkedList.Clear();
-                }).GetAwaiter();
-            }
+                    _currentNode = _currentNode.Next;
+                }
 
-            return _currentNode.Value.GetAwaiter();
+                _currentNode = null;
+                _linkedList.Clear();
+            }).GetAwaiter();
+        }
+
+        public void Clear()
+        {
+            _linkedList.Clear();
+            _currentNode = null;
         }
     }
 }

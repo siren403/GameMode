@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEditor.Toolbars;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -26,9 +28,10 @@ namespace GameMode.Editor.Overlays
         }
 
         [EditorToolbarElement(ID, typeof(SceneView))]
-        class StartFromMasterButton : EditorToolbarButton
+        class StartFromMasterButton : ToolbarButton
         {
             public const string ID = nameof(GameModeToolbar) + "/" + nameof(StartFromMasterButton);
+            private readonly PlayModeListener _playModeListener;
 
             public StartFromMasterButton()
             {
@@ -38,11 +41,17 @@ namespace GameMode.Editor.Overlays
                 {
                     image = image
                 });
+                _playModeListener = new PlayModeListener(this, OnPlayModeStateChanged);
             }
 
             private void OnClick()
             {
                 App.StartGameModeFirst();
+            }
+
+            private void OnPlayModeStateChanged(PlayModeStateChange change)
+            {
+                SetEnabled(change.IsEdit());
             }
         }
 
@@ -53,22 +62,32 @@ namespace GameMode.Editor.Overlays
             public EditorWindow containerWindow { get; set; }
 
             private static int _index;
+            private readonly Button _playModeButton;
+            private readonly PlayModeListener _playModeListener;
 
             public ModesDropdown()
             {
                 dropdownClicked += OnClicked;
 
                 style.minWidth = 150;
-                var btn = this.Query<Button>().First();
-                btn.clicked += () => { App.StartGameMode(btn.text); };
-                btn.style.flexGrow = 1;
+                _playModeButton = this.Query<Button>().First();
+                _playModeButton.clicked += () => { App.StartGameMode(_playModeButton.text); };
+                _playModeButton.style.flexGrow = 1;
 
-                RegisterCallback<AttachToPanelEvent>(e =>
-                {
-                    if (!TryGetGameModes(out var modes)) return;
-                    _index = Mathf.Clamp(_index, 0, modes.Count);
-                    btn.text = modes[_index].name;
-                });
+                _playModeListener = new PlayModeListener(this, OnPlayModeStateChanged);
+                RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+            }
+
+            private void OnAttachToPanel(AttachToPanelEvent e)
+            {
+                if (!TryGetGameModes(out var modes)) return;
+                _index = Mathf.Clamp(_index, 0, modes.Count);
+                _playModeButton.text = modes[_index].name;
+            }
+
+            private void OnPlayModeStateChanged(PlayModeStateChange change)
+            {
+                _playModeButton.SetEnabled(change.IsEdit());
             }
 
             private bool TryGetGameModes(out List<ScriptableGameMode> gameModes)
@@ -149,5 +168,45 @@ namespace GameMode.Editor.Overlays
             //     menu.ShowAsContext();
             // }
         }
+    }
+
+    sealed class PlayModeListener
+    {
+        private readonly VisualElement _element;
+        private readonly Action<PlayModeStateChange> _onChanged;
+
+        public PlayModeListener(VisualElement element, Action<PlayModeStateChange> onChanged)
+        {
+            _element = element;
+            _onChanged = onChanged;
+            _element.RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+            _element.RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+        }
+
+        private void OnAttachToPanel(AttachToPanelEvent e)
+        {
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private void OnDetachFromPanel(DetachFromPanelEvent e)
+        {
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            _element.UnregisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+            _element.UnregisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+        }
+
+        private void OnPlayModeStateChanged(PlayModeStateChange change)
+        {
+            _onChanged?.Invoke(change);
+        }
+    }
+
+    public static class PlayModeExtensions
+    {
+        public static bool IsPlay(this PlayModeStateChange change)
+            => change is PlayModeStateChange.ExitingEditMode or PlayModeStateChange.EnteredPlayMode;
+
+        public static bool IsEdit(this PlayModeStateChange change)
+            => change is PlayModeStateChange.EnteredEditMode or PlayModeStateChange.ExitingPlayMode;
     }
 }
